@@ -1,0 +1,21 @@
+{
+  "name": "Munsbit",
+  "version": "0.0.0",
+  "description": "Recipe site",
+  "main": "index.js",
+  "scripts": {
+    "serve": "node server"
+  },
+  "keywords": [
+    "Food",
+    "Recipes"
+  ],
+  "author": "Jakob Grannas",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.12.3",
+    "phantom": "^0.7.2",
+    "phantomjs": "^1.9.16",
+    "q": "^1.2.0"
+  }
+}
