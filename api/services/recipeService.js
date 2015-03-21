@@ -1,36 +1,20 @@
-var _phantom = require('phantom'),
+var cheerio = require('cheerio'),
+	request = require('request'),
 	Q = require('q'),
 	ReceptNuService = require('./receptNuService');
 
-function scanPhantomPage(url, callback) {
+function getPageDOM (url) {
 	var deferred = Q.defer();
-	_phantom.create("--web-security=no", "--ignore-ssl-errors=yes", { port: 12345 }, function (ph) {
-		ph.createPage(function(page) {
-			page.open(url, function (status) {
-				if (status == "success") {
-					deferred.resolve(page);
-				}
-				else {
-					deferred.reject('Could not open page');
-				}
-			});
-		});
+	request(url, function (error, response, body) {
+		if(!error && (response.statusCode >= 200 && response.statusCode <= 400)) {
+			var DOM = cheerio.load(body);
+			deferred.resolve(DOM);
+		}
+		else {
+			deferred.reject('Non-success status code received from the requested URL');
+		}
 	});
 
-	return deferred.promise;
-}
-
-function getPageData (page, callback) {
-	var deferred = Q.defer();
-	page.evaluate(
-		callback,
-		function (result) {
-			//this log will be printed in the Node console
-			console.log("Result: ", result);
-			deferred.resolve(result);
-		}
-	);
-	page.close();
 	return deferred.promise;
 }
 
@@ -55,9 +39,9 @@ exports.getRecipe = function (url) {
 	}
 
 	if(callback) {
-		return scanPhantomPage(url)
-			.then(function (page) {
-				return getPageData(page, callback);
+		return getPageDOM(url)
+			.then(function (DOM) {
+				return callback(DOM);
 			});
 	}
 };

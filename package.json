@@ -4,7 +4,7 @@
   "description": "Recipe site",
   "main": "index.js",
   "scripts": {
-    "serve": "node server"
+    "start": "node server"
   },
   "keywords": [
     "Food",
@@ -13,9 +13,9 @@
   "author": "Jakob Grannas",
   "license": "ISC",
   "dependencies": {
+    "cheerio": "^0.18.0",
     "express": "^4.12.3",
-    "phantom": "^0.7.2",
-    "phantomjs": "^1.9.16",
-    "q": "^1.2.0"
+    "q": "^1.2.0",
+    "request": "^2.53.0"
   }
 }
