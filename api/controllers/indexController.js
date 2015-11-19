@@ -1,3 +1,3 @@
 exports.render = function (req, res) {
-	res.send('Hello world');
+	res.sendFile('index.html', { root: 'views' });
 };

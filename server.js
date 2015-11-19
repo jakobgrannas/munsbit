@@ -1,7 +1,11 @@
-var express = require('./config/express');
+var express = require('./config/express'),
+    http = require('http');
+
 var app = express();
 
-app.listen(1337);
-console.log('Server running at http://localhost:1337/');
+// Start server
+var server = http.createServer(app).listen(1337, function() {
+    console.log('Server running at http://localhost:1337/');
+});
 
 module.exports = app;

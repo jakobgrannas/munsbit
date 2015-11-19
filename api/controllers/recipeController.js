@@ -9,16 +9,20 @@ module.exports = {
 	import: function (req, res) {
 		var requestedUrl = req.query.url;
 
-		RecipeService.getRecipe(requestedUrl)
-			.then(
-			function (result) {
-				res.send(result);
-			},
-			function (rejectReason) {
-				res.send({
-					errorMessage: rejectReason
-				});
-			}
-		);
+		if(requestedUrl) {
+			RecipeService.getRecipe(requestedUrl)
+				.then(
+				function (result) {
+					console.log(result);
+					res.send(result);
+				},
+				function (rejectReason) {
+					console.log(rejectReason);
+					res.send({
+						errorMessage: rejectReason
+					});
+				}
+			);
+		}
 	}
 };
