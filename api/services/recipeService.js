@@ -1,10 +1,11 @@
-var cheerio = require('cheerio'),
-	request = require('request'),
-	Q = require('q'),
-	ReceptNuService = require('./receptNuService');
+import cheerio from 'cheerio';
+import request from 'request';
+import Q from 'q';
+import ReceptNuService from './ReceptNuService';
 
 function getPageDOM (url) {
 	var deferred = Q.defer();
+
 	request(url, function (error, response, body) {
 		if(!error && (response.statusCode >= 200 && response.statusCode <= 400)) {
 			var DOM = cheerio.load(body);
@@ -18,30 +19,26 @@ function getPageDOM (url) {
 	return deferred.promise;
 }
 
-exports.getRecipe = function (url) {
+export let getRecipe = (url) => {
 	var callback;
 
-	if (url.indexOf('recept.nu') > -1) {
-		callback = ReceptNuService.getRecipeData;
+	if (url.indexOf('koket.se') > -1) {
+		callback = ReceptNuService.getRecipe;
 	}
 	else if(url.indexOf('coop.se') > -1) {
-		callback = CoopService.getRecipeData;
+		callback = CoopService.getRecipe;
 	}
 	else if(url.indexOf('alltommat.se') > -1) {
-		callback = AlltOmMatService.getRecipeData;
+		callback = AlltOmMatService.getRecipe;
 	}
 	else if(url.indexOf('tasteline.com') > -1) {
-		callback = TasteLineService.getRecipeData;
+		callback = TasteLineService.getRecipe;
 	}
 	else {
 		var deferred = Q.defer().reject('Could not import recipe. Site not supported. Please try another site');
 		return deferred.promise();
 	}
 
-	if(callback) {
-		return getPageDOM(url)
-			.then(function (DOM) {
-				return callback(DOM);
-			});
-	}
+	return getPageDOM(url)
+		.then(callback);
 };

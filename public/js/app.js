@@ -1,18 +1,15 @@
-/** @jsx React.DOM */
+import 'babel/polyfill';
 
-var React = require('react');
-var ProductData = require('./ProductData');
-var ProductAPI = require('./utils/ProductAPI');
-var MultiOptionFilter = require('./components/MultiOptionFilter.react');
+import React from 'react';
+import ReactDOM from 'react-dom';
+import Relay from 'react-relay';
+import Recipe from './components/Recipe';
+import AppHomeRoute from './routes/AppHomeRoute';
 
-// Load Mock Product Data into localStorage
-ProductData.init();
-
-// Load Mock API Call
-ProductAPI.getProductData();
-
-// Render FluxCartApp Controller View
-React.render(
-  <MultiOptionFilter />,
-  document.getElementById('mof-body')
+ReactDOM.render(
+    <Relay.RootContainer
+        Component={Recipe}
+        route={new AppHomeRoute(/*{url: "http://www.recept.nu/mitt-kok/roy-fares/saffransbullar-med-fordeg/"}*/)}
+    />,
+    document.getElementById('root')
 );

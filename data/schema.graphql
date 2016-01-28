@@ -1,0 +1,26 @@
+type Ingredient {
+  amount: String
+  name: String
+}
+
+interface Node {
+  id: ID!
+}
+
+type Recipe implements Node {
+  id: ID!
+  state: String
+  title: String
+  cookingTime: String
+  servings: Int
+  author: String
+  datePublished: String
+  imageUrl: String
+  instructions: [String]
+  ingredients: [Ingredient]
+}
+
+type RootQueryType {
+  node(id: ID!): Node
+  recipe(url: String): Recipe
+}

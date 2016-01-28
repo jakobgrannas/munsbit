@@ -1,0 +1,4 @@
+{
+    "plugins": ["./build/babelRelayPlugin"],
+    "presets": ["es2015", "stage-2", "react"]
+}

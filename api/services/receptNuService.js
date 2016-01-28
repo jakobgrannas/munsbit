@@ -1,37 +1,43 @@
-exports.getRecipeData = function (cheerioDOMObject) {
-	var $ = cheerioDOMObject,
-		ingredients = $('#ingredients .ingredient'),
-		instructions = $('.step-by-step li > span');
+let getRecipe = (cheerioDOMObject) => {
+	let $ = cheerioDOMObject,
+		$ingredients = $('.ingredients li'),
+		$instructions = $('.step-by-step span:first-of-type'),
 
-	function getInstructions (instructions) {
-		var result = [];
+		extractIngredients = ($ingredients) => {
+			return [].map.call(
+				$ingredients,
+				(el) => {
+					let amount = $(el).find('.ingredient').text().trim(),
+						name = $(el).find('.ingredient + [itemprop=ingredients]').text().trim();
 
-		instructions.map(function () {
-			result.push($(this).text().trim());
-		});
+					return {
+						amount: amount,
+						name: name
+					};
+				}
+			);
+		},
 
-		return result;
-	}
-
-	// TODO: Move to receptnu class or w/e
-	function getIngredients (ingredients) {
-		var result = [], ingredient;
-
-		for (var i=0; i < ingredients.length; i++) {
-			ingredient = $(ingredients[i]);
-			result.push({
-				amount: ingredient.text().trim(),
-				name: ingredient.next().text().trim()
-			});
-		}
-		return result;
-	}
+		extractInstructions = ($instructions) => {
+			return [].map.call(
+				$instructions,
+				(el) => $(el).text().trim()
+			);
+		};
 
 	return {
-		title: $('.basic-info h1:first-child').text().trim(),
-		cookingTime: $('.basic-info .time').text().trim(),
-		amountOfPersons: $('.basic-info .amount').text().trim(),
-		instructions: getInstructions(instructions),
-		ingredients: getIngredients(ingredients)
+		title: $('h1').text().trim(),
+		cookingTime: $('.cooking-time .time').text().trim(),
+		servings: $('.portions .amount').text().trim(),
+		author: $('.author [itemprop=author] > a').text().trim(),
+		datePublished: $('[itemprop=datePublished]').attr('content'),
+		imageUrl: $('.image-container [itemprop=image]').attr('content'),
+		instructions: extractInstructions($instructions),
+		ingredients: extractIngredients($ingredients)
 	};
 };
+
+
+export default {
+	getRecipe: getRecipe
+}
