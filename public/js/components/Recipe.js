@@ -6,7 +6,7 @@ class Recipe extends React.Component {
         this.props.relay.setVariables({
             url: e.target.value ? e.target.value : ''
         });
-    }
+    };
 
     render () {
         let {title} = this.props.recipe || '';
