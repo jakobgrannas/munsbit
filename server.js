@@ -11,7 +11,7 @@ const GRAPHQL_PORT = 8787;
 // Expose a GraphQL endpoint
 let graphQLServer = express();
 graphQLServer.use('/', graphQLHTTP({
-	schema,
+	schema: schema,
 	pretty: true,
 	graphiql: true
 }));
@@ -27,7 +27,7 @@ let compiler = webpack({
 	    	{
 	        	exclude: /node_modules/,
 		        loader: 'babel',
-		        query: {stage: 0, plugins: ['./build/babelRelayPlugin']},
+		        query: {plugins: ['./build/babelRelayPlugin']},
 	    		test: /\.js$/,
 	    	},
 	    ]
