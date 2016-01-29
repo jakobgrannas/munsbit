@@ -1,7 +1,7 @@
 import cheerio from 'cheerio';
 import request from 'request';
 import Q from 'q';
-import ReceptNuService from './ReceptNuService';
+import ReceptNuService from './koketService';
 
 function getPageDOM (url) {
 	return new Promise((resolve, reject) => {
