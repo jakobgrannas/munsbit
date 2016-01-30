@@ -10,11 +10,12 @@ interface Node {
 type Recipe implements Node {
   id: ID!
   state: String
+  url: String
   title: String
   cookingTime: String
   servings: Int
   author: String
-  datePublished: String
+  datePublished: Int
   imageUrl: String
   instructions: [String]
   ingredients: [Ingredient]
@@ -22,5 +23,14 @@ type Recipe implements Node {
 
 type RootQueryType {
   node(id: ID!): Node
-  recipe(url: String): Recipe
+  viewer(id: Int): Viewer
+}
+
+type Viewer implements Node {
+  id: ID!
+  userId: String
+  name: String
+  email: String
+  recipes: [Recipe]
+  recipe(url: String!): Recipe
 }

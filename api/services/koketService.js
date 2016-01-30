@@ -1,3 +1,5 @@
+import moment from 'moment';
+
 let getRecipe = (cheerioDOMObject) => {
 	let $ = cheerioDOMObject,
 		$ingredients = $('.ingredients li'),
@@ -30,7 +32,7 @@ let getRecipe = (cheerioDOMObject) => {
 		cookingTime: $('.cooking-time .time').text().trim(),
 		servings: $('.portions .amount').text().trim(),
 		author: $('.author [itemprop=author] > a').text().trim(),
-		datePublished: $('[itemprop=datePublished]').attr('content'),
+		datePublished: moment.utc($('[itemprop=datePublished]').attr('content')).valueOf(),
 		imageUrl: $('.image-container [itemprop=image]').attr('content'),
 		instructions: extractInstructions($instructions),
 		ingredients: extractIngredients($ingredients)

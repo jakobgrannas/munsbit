@@ -25,7 +25,15 @@ import {
   getRecipe,
   getInstructions,
   getIngredients
-} from '../api/services/RecipeService'; // TODO: Move schema to /api
+} from '../api/services/RecipeService';
+
+let getViewer = () => {
+	return {
+		userId: '1',
+		name: 'Anonymous',
+		email: 'due'
+	}
+};
 
 /**
  * We get the node interface and field from the Relay library.
@@ -37,18 +45,13 @@ let {nodeInterface, nodeField} = nodeDefinitions(
 	// Context can be made available through the graphql middleware config in server.js
 	(globalId, context) => {
 		let {type, id} = fromGlobalId(globalId);
-	    if (type === 'Recipe') {
-	    	return getRecipe(id);
-	    } else {
-	    	return null;
-	    }
-	},
-	(obj) => {
-		switch(typeof obj) {
-			case 'recipe':
-				return recipeType
+	    switch(type) {
+			case 'Recipe':
+		    	return getRecipe(id);
+			case 'Viewer':
+				return getViewer(id);
 			default:
-				return null
+				return null;
 		}
 	}
 );
@@ -76,16 +79,17 @@ let ingredientType = new GraphQLObjectType({
 let recipeType = new GraphQLObjectType({
     name: 'Recipe',
     description: 'A recipe',
+	isTypeOf: ({instructions}) => instructions && instructions.length > 0,
     fields: () => ({
         id: globalIdField('Recipe'),
         state: {
             type: GraphQLString,
             description: 'State of the recipe. Can be either "draft" or "imported"',
         },
-        /*url: {
-            type: new GraphQLNonNull(GraphQLString),
+        url: {
+            type: GraphQLString,
             description: 'The URL from which the recipe came'
-        },*/
+        },
         title: {
             type: GraphQLString,
             description: 'Recipe title'
@@ -103,8 +107,8 @@ let recipeType = new GraphQLObjectType({
 			description: 'Author/chef of the recipe'
 		},
 		datePublished: {
-			type: GraphQLString, // TODO: Convert to date,
-			description: 'Date when the recipe was published'
+			type: GraphQLString,
+			description: 'Timestamp of when the recipe was published'
 		},
 		imageUrl: {
 			type: GraphQLString,
@@ -116,7 +120,6 @@ let recipeType = new GraphQLObjectType({
         },
 		ingredients: {
             type: new GraphQLList(ingredientType),
-			//type: connectionDefinitions({name: 'Ingredient', nodeType: ingredientType }),
             description: 'List of ingredients',
             resolve: (recipe) => {
 				return recipe.ingredients;
@@ -126,78 +129,68 @@ let recipeType = new GraphQLObjectType({
     interfaces: [nodeInterface]
 });
 
-let userType = new GraphQLObjectType({
-    name: 'User',
+let viewerType = new GraphQLObjectType({
+    name: 'Viewer',
     description: 'A person who uses the app',
+	isTypeOf: (obj) => !!obj.userId,
     fields: () => ({
-        id: globalIdField('User'),
+        id: globalIdField('Viewer'),
+		userId: {
+			type: GraphQLString
+		},
         name: {
-            type: GraphQLString,
-            description: 'User name'
+            type: GraphQLString
         },
+		email: {
+			type: GraphQLString,
+		},
         recipes: {
             type: new GraphQLList(recipeType),
-            description: "List of the user's recipes"
+            description: "List of the user's recipes",
+			resolve: (recipes, args) => {
+				// TODO: Fetch from MongoDB
+				return;
+			}
         },
         recipe: {
             type: recipeType,
-            description: 'A single recipe resource'
+            description: 'A single recipe resource',
+			args: {
+				url: {
+					name: 'url',
+					type: new GraphQLNonNull(GraphQLString)
+				}
+			},
+			resolve: (recipe, {url}) => {
+				let promise = getRecipe(url);
+				promise.then((v) => console.log(v));
+				return promise;
+			}
         }
-    })
+    }),
+	interfaces: [nodeInterface]
 });
-
-/*var userType = new GraphQLObjectType({
-  name: 'User',
-  description: 'A person who uses our app',
-  fields: () => ({
-    id: globalIdField('User'),
-    widgets: {
-      type: widgetConnection,
-      description: 'A person\'s collection of widgets',
-      args: connectionArgs,
-      resolve: (_, args) => connectionFromArray(getWidgets(), args),
-    },
-  }),
-  interfaces: [nodeInterface],
-});
-
-var widgetType = new GraphQLObjectType({
-  name: 'Widget',
-  description: 'A shiny widget',
-  fields: () => ({
-    id: globalIdField('Widget'),
-    name: {
-      type: GraphQLString,
-      description: 'The name of the widget',
-    },
-  }),
-  interfaces: [nodeInterface],
-});*/
 
 /**
  * This is the type that will be the root of our query,
  * and the entry point into our schema.
  */
 var queryType = new GraphQLObjectType({
-  name: 'RootQueryType', //'Query',
+  name: 'RootQueryType',
   fields: () => ({
     node: nodeField,
-    // Add your own root fields here
-	//user: {
-		recipe: {
-	        type: recipeType,
-	        args: {
-	            url: {
-	                name: 'url',
-	                type: GraphQLString
-	            }
-	        },
-	        resolve: (recipe, {url}) => {
-	            let result = getRecipe(url);
-	            return result;
-	        }
-	    }
-	//}
+	viewer: {
+		type: viewerType,
+		args: {
+			id: {
+				name: 'userId',
+				type: GraphQLInt
+			}
+		},
+		resolve: (viewer, {id}) => {
+			return getViewer();
+		}
+	}
   }),
 });
 
