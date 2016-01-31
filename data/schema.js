@@ -29,7 +29,7 @@ import {
 
 let getViewer = () => {
 	return {
-		userId: '1',
+		userId: "0",
 		name: 'Anonymous',
 		email: 'due'
 	}
@@ -162,9 +162,12 @@ let viewerType = new GraphQLObjectType({
 				}
 			},
 			resolve: (recipe, {url}) => {
-				let promise = getRecipe(url);
-				promise.then((v) => console.log(v));
-				return promise;
+				if(url) {
+					let promise = getRecipe(url);
+					promise.then((res) => console.log(res));
+					return promise;
+				}
+				return null;
 			}
         }
     }),

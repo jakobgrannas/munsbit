@@ -40,5 +40,5 @@ export let getRecipe = (url) => {
 
 	return getPageDOM(url)
 		.then(callback)
-		.then((res) => res.url = url && res);
+		.then((res) => (res.url = url) && res);
 };

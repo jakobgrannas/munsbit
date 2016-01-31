@@ -3,18 +3,18 @@ import Relay from 'react-relay';
 export default class extends Relay.Route {
     static routeName = 'AppHomeRoute';
     static paramDefinitions = {
-        url: {required: false},
+        userId: {required: false},
     };
+	static params: {
+	    userId: "0",
+	};
     static queries = {
-        recipe: (Component, variables) => {
-            console.log(variables);
-            return Relay.QL`
-                query RecipeQuery {
-                    recipe(url: $url) {
-                        ${Component.getFragment('recipe')}
+        viewer: (Component, variables) => Relay.QL`
+                query ViewerQuery {
+                    viewer {
+                        ${Component.getFragment('viewer')}
                     }
                 }
             `
-        }
     };
 }
