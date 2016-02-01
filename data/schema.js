@@ -170,7 +170,7 @@ let viewerType = new GraphQLObjectType({
     fields: () => ({
         id: globalIdField('Viewer'),
 		type: {
-			type: GraphQLString
+			type: GraphQLString,
 			description: 'registered or anonymous'
 		},
 		user: {
