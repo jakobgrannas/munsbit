@@ -42,18 +42,7 @@
             {
               "name": "viewer",
               "description": null,
-              "args": [
-                {
-                  "name": "id",
-                  "description": null,
-                  "type": {
-                    "kind": "SCALAR",
-                    "name": "Int",
-                    "ofType": null
-                  },
-                  "defaultValue": null
-                }
-              ],
+              "args": [],
               "type": {
                 "kind": "OBJECT",
                 "name": "Viewer",
@@ -107,6 +96,11 @@
             {
               "kind": "OBJECT",
               "name": "Recipe",
+              "ofType": null
+            },
+            {
+              "kind": "OBJECT",
+              "name": "User",
               "ofType": null
             },
             {
@@ -215,7 +209,7 @@
               "args": [],
               "type": {
                 "kind": "SCALAR",
-                "name": "Int",
+                "name": "String",
                 "ofType": null
               },
               "isDeprecated": false,
@@ -334,8 +328,8 @@
         },
         {
           "kind": "OBJECT",
-          "name": "Viewer",
-          "description": "A person who uses the app",
+          "name": "User",
+          "description": "A user of the app",
           "fields": [
             {
               "name": "id",
@@ -407,7 +401,87 @@
             },
             {
               "name": "recipe",
-              "description": "A single recipe resource",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "OBJECT",
+                "name": "Recipe",
+                "ofType": null
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            }
+          ],
+          "inputFields": null,
+          "interfaces": [
+            {
+              "kind": "INTERFACE",
+              "name": "Node",
+              "ofType": null
+            }
+          ],
+          "enumValues": null,
+          "possibleTypes": null
+        },
+        {
+          "kind": "OBJECT",
+          "name": "Viewer",
+          "description": "A person viewing the app",
+          "fields": [
+            {
+              "name": "id",
+              "description": "The ID of an object",
+              "args": [],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "SCALAR",
+                  "name": "ID",
+                  "ofType": null
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "type",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "SCALAR",
+                "name": "String",
+                "ofType": null
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "user",
+              "description": null,
+              "args": [
+                {
+                  "name": "id",
+                  "description": null,
+                  "type": {
+                    "kind": "SCALAR",
+                    "name": "Int",
+                    "ofType": null
+                  },
+                  "defaultValue": null
+                }
+              ],
+              "type": {
+                "kind": "OBJECT",
+                "name": "User",
+                "ofType": null
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "recipe",
+              "description": "A recipe scraped from any of the available scarping sources",
               "args": [
                 {
                   "name": "url",

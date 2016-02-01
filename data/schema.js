@@ -27,13 +27,15 @@ import {
   getIngredients
 } from '../api/services/RecipeService';
 
-let getViewer = () => {
-	return {
-		userId: "0",
-		name: 'Anonymous',
-		email: 'due'
-	}
-};
+let getViewer = () => ({
+	type: 'registered' // TODO: or 'anonymous'
+});
+
+let getUser = () => ({
+	userId: "0",
+	name: 'Anonymous',
+	email: 'due'
+});
 
 /**
  * We get the node interface and field from the Relay library.
@@ -50,6 +52,8 @@ let {nodeInterface, nodeField} = nodeDefinitions(
 		    	return getRecipe(id);
 			case 'Viewer':
 				return getViewer(id);
+			case 'User':
+				return getUser(id);
 			default:
 				return null;
 		}
@@ -129,12 +133,12 @@ let recipeType = new GraphQLObjectType({
     interfaces: [nodeInterface]
 });
 
-let viewerType = new GraphQLObjectType({
-    name: 'Viewer',
-    description: 'A person who uses the app',
+let userType = new GraphQLObjectType({
+	name: 'User',
+	description: 'A user of the app',
 	isTypeOf: (obj) => !!obj.userId,
-    fields: () => ({
-        id: globalIdField('Viewer'),
+	fields: () => ({
+		id: globalIdField('User'),
 		userId: {
 			type: GraphQLString
 		},
@@ -144,17 +148,46 @@ let viewerType = new GraphQLObjectType({
 		email: {
 			type: GraphQLString,
 		},
-        recipes: {
-            type: new GraphQLList(recipeType),
-            description: "List of the user's recipes",
+		recipes: {
+			type: new GraphQLList(recipeType),
+			description: "List of the user's recipes",
 			resolve: (recipes, args) => {
 				// TODO: Fetch from MongoDB
 				return;
 			}
-        },
+		},
+		recipe: {
+			type: recipeType
+		}
+	}),
+	interfaces: [nodeInterface]
+});
+
+let viewerType = new GraphQLObjectType({
+    name: 'Viewer',
+    description: 'A person viewing the app',
+	isTypeOf: (obj) => !!obj.type,
+    fields: () => ({
+        id: globalIdField('Viewer'),
+		type: {
+			type: GraphQLString
+			description: 'registered or anonymous'
+		},
+		user: {
+			type: userType,
+			args: {
+				id: {
+					name: 'userId',
+					type: GraphQLInt
+				}
+			},
+			resolve: (user) => {
+				return getUser();
+			}
+		},
         recipe: {
             type: recipeType,
-            description: 'A single recipe resource',
+            description: 'A recipe scraped from any of the available scarping sources',
 			args: {
 				url: {
 					name: 'url',
@@ -184,11 +217,13 @@ var queryType = new GraphQLObjectType({
     node: nodeField,
 	viewer: {
 		type: viewerType,
-		args: {
-			id: {
-				name: 'userId',
-				type: GraphQLInt
-			}
+		fields: {
+			user: {
+				type: userType
+			},
+			recipe: {
+	            type: recipeType
+	        }
 		},
 		resolve: (viewer, {id}) => {
 			return getViewer();

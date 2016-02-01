@@ -15,7 +15,7 @@ type Recipe implements Node {
   cookingTime: String
   servings: Int
   author: String
-  datePublished: Int
+  datePublished: String
   imageUrl: String
   instructions: [String]
   ingredients: [Ingredient]
@@ -23,14 +23,21 @@ type Recipe implements Node {
 
 type RootQueryType {
   node(id: ID!): Node
-  viewer(id: Int): Viewer
+  viewer: Viewer
 }
 
-type Viewer implements Node {
+type User implements Node {
   id: ID!
   userId: String
   name: String
   email: String
   recipes: [Recipe]
+  recipe: Recipe
+}
+
+type Viewer implements Node {
+  id: ID!
+  type: String
+  user(id: Int): User
   recipe(url: String!): Recipe
 }
