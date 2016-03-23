@@ -4,9 +4,13 @@ import path from 'path';
 import webpack from 'webpack';
 import WebpackDevServer from 'webpack-dev-server';
 import {schema} from './data/schema';
+import mongoose from './api/db/config.js';
 
 const APP_PORT = 1337;
 const GRAPHQL_PORT = 8787;
+
+// Set up mongo(ose)
+mongoose();
 
 // Expose a GraphQL endpoint
 let graphQLServer = express();

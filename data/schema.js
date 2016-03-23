@@ -27,6 +27,8 @@ import {
   getIngredients
 } from '../api/services/RecipeService';
 
+import {RecipeModel} from '../api/db/models/recipeModel';
+
 let getViewer = () => ({
 	type: 'registered' // TODO: or 'anonymous'
 });
@@ -152,8 +154,19 @@ let userType = new GraphQLObjectType({
 			type: new GraphQLList(recipeType),
 			description: "List of the user's recipes",
 			resolve: (recipes, args) => {
-				// TODO: Fetch from MongoDB
-				return;
+                var promise = new Promise((resolve, reject) => {
+                    RecipeModel.find({}, function (error, recipes) {
+                		if(error) {
+                			error.status = 400;
+                			return reject(error);
+                		}
+                		else {
+                			resolve(recipes);
+                		}
+                	}).sort({order: 'asc'});
+                })
+
+				return promise;
 			}
 		},
 		recipe: {

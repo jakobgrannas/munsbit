@@ -31,6 +31,8 @@
     "graphql-relay": "0.3.6",
     "method-override": "^2.3.2",
     "moment": "^2.11.1",
+    "mongodb": "^2.1.7",
+    "mongoose": "^4.4.4",
     "react": "0.14.3",
     "react-dom": "0.14.3",
     "react-relay": "0.6.1",
