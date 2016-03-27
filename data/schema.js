@@ -6,6 +6,7 @@ import {
   GraphQLList,
   GraphQLNonNull,
   GraphQLObjectType,
+  GraphQLInputObjectType,
   GraphQLSchema,
   GraphQLString,
 } from 'graphql';
@@ -88,6 +89,14 @@ let recipeType = new GraphQLObjectType({
 	isTypeOf: ({instructions}) => instructions && instructions.length > 0,
     fields: () => ({
         id: globalIdField('Recipe'),
+        _id: {
+            type: GraphQLString,
+            description: 'Mongoose id field'
+        },
+        __v: {
+            type: GraphQLInt,
+            description: 'Mongoose version field'
+        },
         state: {
             type: GraphQLString,
             description: 'State of the recipe. Can be either "draft" or "imported"',
@@ -154,7 +163,7 @@ let userType = new GraphQLObjectType({
 			type: new GraphQLList(recipeType),
 			description: "List of the user's recipes",
 			resolve: (recipes, args) => {
-                var promise = new Promise((resolve, reject) => {
+                /*let promise = new Promise((resolve, reject) => {
                     RecipeModel.find({}, function (error, recipes) {
                 		if(error) {
                 			error.status = 400;
@@ -166,7 +175,7 @@ let userType = new GraphQLObjectType({
                 	}).sort({order: 'asc'});
                 })
 
-				return promise;
+				return promise;*/
 			}
 		},
 		recipe: {
@@ -250,10 +259,102 @@ var queryType = new GraphQLObjectType({
  * and the entry point into performing writes in our schema.
  */
 var mutationType = new GraphQLObjectType({
-  name: 'Mutation',
-  fields: () => ({
-    // Add your own mutations here
-  })
+    name: 'Mutation',
+    fields: () => ({
+        createRecipe: createRecipeMutation
+    })
+});
+
+let ingredientInputType = new GraphQLInputObjectType({
+    name: 'IngredientInput',
+    description: 'Ingredient',
+    fields: {
+        amount: {
+            type: GraphQLString,
+            description: 'Amount of the ingredient to be used'
+        },
+        name: {
+            type: GraphQLString,
+            description: 'Name of the ingredient'
+        }
+    }
+});
+
+let createRecipeMutation = mutationWithClientMutationId({
+    name: 'CreateRecipe',
+    inputFields: {
+        state: {
+            type: GraphQLString,
+            description: 'State of the recipe. Can be either "draft" or "imported"',
+        },
+        url: {
+            type: GraphQLString,
+            description: 'The URL from which the recipe came'
+        },
+        title: {
+            type: GraphQLString,
+            description: 'Recipe title'
+        },
+        cookingTime: {
+            type: GraphQLString,
+            description: 'Amount of time it takes to cook the meal'
+        },
+        servings: {
+            type: GraphQLInt,
+            description: 'Number of servings'
+        },
+        author: {
+            type: GraphQLString,
+            description: 'Author/chef of the recipe'
+        },
+        datePublished: {
+            type: GraphQLString,
+            description: 'Timestamp of when the recipe was published'
+        },
+        imageUrl: {
+            type: GraphQLString,
+            description: 'Main recipe image url'
+        },
+        instructions: {
+            type: new GraphQLList(GraphQLString),
+            description: 'List of instructions on how to cook this recipe'
+        },
+        ingredients: {
+            type: new GraphQLList(ingredientInputType),
+            description: 'List of ingredients'
+        }
+    },
+    outputFields: {
+        recipe: {
+            type: recipeType,
+            resolve: (recipe) => {
+                console.log('outputFields resolve');
+                console.log(recipe);
+                return recipe;
+            }
+        }
+    },
+    mutateAndGetPayload: (recipeObj) => {
+        let recipe = new RecipeModel(recipeObj),
+            promise;
+
+        console.log(recipeObj);
+
+    	promise = new Promise((resolve, reject) => {
+            recipe.save((error) => {
+        		if(error) {
+        			error.status = 400;
+        			reject(error);
+        		}
+        		else {
+                    console.log(recipe);
+        			resolve(recipe);
+        		}
+        	});
+    	});
+
+        return promise;
+    },
 });
 
 /**
@@ -262,6 +363,5 @@ var mutationType = new GraphQLObjectType({
  */
 export var schema = new GraphQLSchema({
   query: queryType,
-  // Uncomment the following after adding some mutation fields:
-  // mutation: mutationType
+  mutation: mutationType
 });

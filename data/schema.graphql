@@ -1,6 +1,25 @@
+input CreateRecipeInput {
+  recipe: RecipeInput
+  clientMutationId: String!
+}
+
+type CreateRecipePayload {
+  recipe: Recipe
+  clientMutationId: String!
+}
+
 type Ingredient {
   amount: String
   name: String
+}
+
+input IngredientInput {
+  amount: String
+  name: String
+}
+
+type Mutation {
+  createRecipe(input: CreateRecipeInput!): CreateRecipePayload
 }
 
 interface Node {
@@ -19,6 +38,19 @@ type Recipe implements Node {
   imageUrl: String
   instructions: [String]
   ingredients: [Ingredient]
+}
+
+input RecipeInput {
+  state: String
+  url: String
+  title: String
+  cookingTime: String
+  servings: Int
+  author: String
+  datePublished: String
+  imageUrl: String
+  instructions: [String]
+  ingredients: [IngredientInput]
 }
 
 type RootQueryType {
