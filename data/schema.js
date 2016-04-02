@@ -52,7 +52,7 @@ let {nodeInterface, nodeField} = nodeDefinitions(
 		let {type, id} = fromGlobalId(globalId);
 	    switch(type) {
 			case 'Recipe':
-		    	return getRecipe(id);
+		    	return getRecipe(id); // TODO: This can't possibly work
 			case 'Viewer':
 				return getViewer(id);
 			case 'User':
@@ -72,6 +72,10 @@ let ingredientType = new GraphQLObjectType({
     name: 'Ingredient',
     description: 'Ingredient',
     fields: {
+        _id: {
+            type: GraphQLString,
+            description: 'Mongodb record id'
+        },
         amount: {
             type: GraphQLString,
             description: 'Amount of the ingredient to be used'
@@ -86,20 +90,16 @@ let ingredientType = new GraphQLObjectType({
 let recipeType = new GraphQLObjectType({
     name: 'Recipe',
     description: 'A recipe',
-	isTypeOf: ({instructions}) => instructions && instructions.length > 0,
+	isTypeOf: () => ({instructions}) => instructions && instructions.length > 0,
     fields: () => ({
         id: globalIdField('Recipe'),
         _id: {
             type: GraphQLString,
-            description: 'Mongoose id field'
-        },
-        __v: {
-            type: GraphQLInt,
-            description: 'Mongoose version field'
+            description: 'Mongodb id'
         },
         state: {
             type: GraphQLString,
-            description: 'State of the recipe. Can be either "draft" or "imported"',
+            description: 'State of the recipe. Can be either "draft", "imported" or "uploaded"'
         },
         url: {
             type: GraphQLString,
@@ -163,8 +163,8 @@ let userType = new GraphQLObjectType({
 			type: new GraphQLList(recipeType),
 			description: "List of the user's recipes",
 			resolve: (recipes, args) => {
-                /*let promise = new Promise((resolve, reject) => {
-                    RecipeModel.find({}, function (error, recipes) {
+                let promise = new Promise((resolve, reject) => {
+                    RecipeModel.find({}, (error, recipes) => {
                 		if(error) {
                 			error.status = 400;
                 			return reject(error);
@@ -175,7 +175,7 @@ let userType = new GraphQLObjectType({
                 	}).sort({order: 'asc'});
                 })
 
-				return promise;*/
+				return promise;
 			}
 		},
 		recipe: {
@@ -209,7 +209,7 @@ let viewerType = new GraphQLObjectType({
 		},
         recipe: {
             type: recipeType,
-            description: 'A recipe scraped from any of the available scarping sources',
+            description: 'A recipe scraped from any of the available scraping sources',
 			args: {
 				url: {
 					name: 'url',
@@ -217,12 +217,28 @@ let viewerType = new GraphQLObjectType({
 				}
 			},
 			resolve: (recipe, {url}) => {
-				if(url) {
-					let promise = getRecipe(url);
-					promise.then((res) => console.log(res));
-					return promise;
-				}
-				return null;
+                let promise = new Promise((resolve, reject) => {
+                    if(!url) {
+                        reject("Url parameter not provided");
+                    }
+
+                    RecipeModel.find(
+                        {
+                            url: url
+                        },
+                        (error, recipes) => {
+                    		if(error) {
+                    			error.status = 400;
+                    			reject(error);
+                    		}
+                    		else {
+                    			resolve(recipes);
+                    		}
+                    	})
+                        .sort({order: 'asc'});
+                });
+
+				return promise;
 			}
         }
     }),
@@ -261,7 +277,7 @@ var queryType = new GraphQLObjectType({
 var mutationType = new GraphQLObjectType({
     name: 'Mutation',
     fields: () => ({
-        createRecipe: createRecipeMutation
+        importRecipe: importRecipeMutation
     })
 });
 
@@ -280,78 +296,47 @@ let ingredientInputType = new GraphQLInputObjectType({
     }
 });
 
-let createRecipeMutation = mutationWithClientMutationId({
-    name: 'CreateRecipe',
+let importRecipeMutation = mutationWithClientMutationId({
+    name: 'ImportRecipe',
     inputFields: {
+        url: {
+            type: new GraphQLNonNull(GraphQLString)
+        },
         state: {
             type: GraphQLString,
-            description: 'State of the recipe. Can be either "draft" or "imported"',
-        },
-        url: {
-            type: GraphQLString,
-            description: 'The URL from which the recipe came'
-        },
-        title: {
-            type: GraphQLString,
-            description: 'Recipe title'
-        },
-        cookingTime: {
-            type: GraphQLString,
-            description: 'Amount of time it takes to cook the meal'
-        },
-        servings: {
-            type: GraphQLInt,
-            description: 'Number of servings'
-        },
-        author: {
-            type: GraphQLString,
-            description: 'Author/chef of the recipe'
-        },
-        datePublished: {
-            type: GraphQLString,
-            description: 'Timestamp of when the recipe was published'
-        },
-        imageUrl: {
-            type: GraphQLString,
-            description: 'Main recipe image url'
-        },
-        instructions: {
-            type: new GraphQLList(GraphQLString),
-            description: 'List of instructions on how to cook this recipe'
-        },
-        ingredients: {
-            type: new GraphQLList(ingredientInputType),
-            description: 'List of ingredients'
+            description: 'State of the recipe. Can be either "draft", "imported" or "uploaded"',
+            defaultValue: 'draft'
         }
     },
     outputFields: {
         recipe: {
             type: recipeType,
-            resolve: (recipe) => {
-                console.log('outputFields resolve');
-                console.log(recipe);
-                return recipe;
-            }
+            resolve: (recipe) => recipe
         }
     },
-    mutateAndGetPayload: (recipeObj) => {
-        let recipe = new RecipeModel(recipeObj),
-            promise;
+    mutateAndGetPayload: ({url, state}) => {
+        let promise = new Promise((resolve, reject) => {
+            getRecipe(url)
+                .then(
+                    (res) => {
+                        res.state = state;
 
-        console.log(recipeObj);
+                        let recipe = new RecipeModel(res);
 
-    	promise = new Promise((resolve, reject) => {
-            recipe.save((error) => {
-        		if(error) {
-        			error.status = 400;
-        			reject(error);
-        		}
-        		else {
-                    console.log(recipe);
-        			resolve(recipe);
-        		}
-        	});
-    	});
+                        recipe.save((error) => {
+                    		if(error) {
+                    			error.status = 400;
+                                console.log(error);
+                    			reject(error);
+                    		}
+                    		else {
+                                console.log(recipe);
+                    			resolve(recipe);
+                    		}
+                    	});
+                    })
+                .catch(reject);
+        });
 
         return promise;
     },

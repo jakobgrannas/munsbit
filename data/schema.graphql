@@ -1,25 +1,22 @@
-input CreateRecipeInput {
-  recipe: RecipeInput
+input ImportRecipeInput {
+  url: String!
+  state: String = "draft"
   clientMutationId: String!
 }
 
-type CreateRecipePayload {
+type ImportRecipePayload {
   recipe: Recipe
   clientMutationId: String!
 }
 
 type Ingredient {
-  amount: String
-  name: String
-}
-
-input IngredientInput {
+  _id: String
   amount: String
   name: String
 }
 
 type Mutation {
-  createRecipe(input: CreateRecipeInput!): CreateRecipePayload
+  importRecipe(input: ImportRecipeInput!): ImportRecipePayload
 }
 
 interface Node {
@@ -28,6 +25,7 @@ interface Node {
 
 type Recipe implements Node {
   id: ID!
+  _id: String
   state: String
   url: String
   title: String
@@ -38,19 +36,6 @@ type Recipe implements Node {
   imageUrl: String
   instructions: [String]
   ingredients: [Ingredient]
-}
-
-input RecipeInput {
-  state: String
-  url: String
-  title: String
-  cookingTime: String
-  servings: Int
-  author: String
-  datePublished: String
-  imageUrl: String
-  instructions: [String]
-  ingredients: [IngredientInput]
 }
 
 type RootQueryType {

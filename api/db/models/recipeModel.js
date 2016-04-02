@@ -1,18 +1,25 @@
 import mongoose from 'mongoose';
 
 let RecipeSchema = new mongoose.Schema({
-	title: {
+	state: {
 		type: String,
-		required: false
+		default: 'draft'
 	},
-	instructions: {
-		type: Array,
-		required: true
-	},
-	clientMutationId: {
+	url: {
 		type: String,
 		required: true
-	}
+	},
+	title: String,
+	cookingTime: String,
+	servings: Number,
+	author: String,
+	datePublished: Date,
+	imageUrl: String,
+	instructions: [String],
+	ingredients: [{
+		name: String,
+		amount: String
+	}]
 });
 
 export let RecipeModel = mongoose.model('recipe', RecipeSchema);
