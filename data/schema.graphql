@@ -9,10 +9,21 @@ type ImportRecipePayload {
   clientMutationId: String!
 }
 
-type Ingredient {
+type Ingredient implements Node {
+  id: ID!
   _id: String
   amount: String
   name: String
+}
+
+type IngredientConnection {
+  pageInfo: PageInfo!
+  edges: [IngredientEdge]
+}
+
+type IngredientEdge {
+  node: Ingredient
+  cursor: String!
 }
 
 type Mutation {
@@ -21,6 +32,13 @@ type Mutation {
 
 interface Node {
   id: ID!
+}
+
+type PageInfo {
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+  startCursor: String
+  endCursor: String
 }
 
 type Recipe implements Node {
@@ -35,7 +53,7 @@ type Recipe implements Node {
   datePublished: String
   imageUrl: String
   instructions: [String]
-  ingredients: [Ingredient]
+  ingredients: IngredientConnection
 }
 
 type RootQueryType {

@@ -19,7 +19,9 @@ export default Relay.createContainer(Recipe, {
     fragments: {
         recipe: () => Relay.QL`
             fragment on Recipe {
-				title
+				title,
+				state,
+				instructions
             }
         `
     }

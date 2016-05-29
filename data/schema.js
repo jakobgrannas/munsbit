@@ -17,8 +17,7 @@ import {
   connectionFromArray,
   fromGlobalId,
   globalIdField,
-  mutationWithClientMutationId,
-  nodeDefinitions,
+  mutationWithClientMutationId
 } from 'graphql-relay';
 
 import {
@@ -28,7 +27,14 @@ import {
   getIngredients
 } from '../api/services/RecipeService';
 
+import {
+    recipeMutations,
+    recipeType,
+} from './recipes';
+
 import {RecipeModel} from '../api/db/models/recipeModel';
+
+import {nodeInterface, nodeField} from './nodeDefinitions';
 
 let getViewer = () => ({
 	type: 'registered' // TODO: or 'anonymous'
@@ -40,110 +46,7 @@ let getUser = () => ({
 	email: 'due'
 });
 
-/**
- * We get the node interface and field from the Relay library.
- *
- * The first method defines the way we resolve an ID to its object.
- * The second defines the way we resolve an object to its GraphQL type.
- */
-let {nodeInterface, nodeField} = nodeDefinitions(
-	// Context can be made available through the graphql middleware config in server.js
-	(globalId, context) => {
-		let {type, id} = fromGlobalId(globalId);
-	    switch(type) {
-			case 'Recipe':
-		    	return getRecipe(id); // TODO: This can't possibly work
-			case 'Viewer':
-				return getViewer(id);
-			case 'User':
-				return getUser(id);
-			default:
-				return null;
-		}
-	}
-);
-
-
-/**
- * Define your own types here
- */
-
-let ingredientType = new GraphQLObjectType({
-    name: 'Ingredient',
-    description: 'Ingredient',
-    fields: {
-        _id: {
-            type: GraphQLString,
-            description: 'Mongodb record id'
-        },
-        amount: {
-            type: GraphQLString,
-            description: 'Amount of the ingredient to be used'
-        },
-        name: {
-            type: GraphQLString,
-            description: 'Name of the ingredient'
-        }
-    }
-});
-
-let recipeType = new GraphQLObjectType({
-    name: 'Recipe',
-    description: 'A recipe',
-	isTypeOf: () => ({instructions}) => instructions && instructions.length > 0,
-    fields: () => ({
-        id: globalIdField('Recipe'),
-        _id: {
-            type: GraphQLString,
-            description: 'Mongodb id'
-        },
-        state: {
-            type: GraphQLString,
-            description: 'State of the recipe. Can be either "draft", "imported" or "uploaded"'
-        },
-        url: {
-            type: GraphQLString,
-            description: 'The URL from which the recipe came'
-        },
-        title: {
-            type: GraphQLString,
-            description: 'Recipe title'
-        },
-		cookingTime: {
-            type: GraphQLString,
-            description: 'Amount of time it takes to cook the meal'
-        },
-		servings: {
-            type: GraphQLInt,
-            description: 'Number of servings'
-        },
-		author: {
-			type: GraphQLString,
-			description: 'Author/chef of the recipe'
-		},
-		datePublished: {
-			type: GraphQLString,
-			description: 'Timestamp of when the recipe was published'
-		},
-		imageUrl: {
-			type: GraphQLString,
-			description: 'Main recipe image url'
-		},
-		instructions: {
-            type: new GraphQLList(GraphQLString),
-            description: 'List of instructions on how to cook this recipe',
-        },
-		ingredients: {
-            type: new GraphQLList(ingredientType),
-            description: 'List of ingredients',
-            resolve: (recipe) => {
-				return recipe.ingredients;
-			}
-        }
-    }),
-    interfaces: [nodeInterface]
-});
-
+// TODO: Move out
 let userType = new GraphQLObjectType({
 	name: 'User',
 	description: 'A user of the app',
@@ -185,6 +88,8 @@ let userType = new GraphQLObjectType({
 	interfaces: [nodeInterface]
 });
 
+
+
 let viewerType = new GraphQLObjectType({
     name: 'Viewer',
     description: 'A person viewing the app',
@@ -222,7 +127,7 @@ let viewerType = new GraphQLObjectType({
                         reject("Url parameter not provided");
                     }
 
-                    RecipeModel.find(
+                    RecipeModel.find(  // TODO: This won't work because multiple records can have the same url
                         {
                             url: url
                         },
@@ -277,7 +182,7 @@ var queryType = new GraphQLObjectType({
 var mutationType = new GraphQLObjectType({
     name: 'Mutation',
     fields: () => ({
-        importRecipe: importRecipeMutation
+        importRecipe: recipeMutations.importRecipe
     })
 });
 
@@ -296,51 +201,6 @@ let ingredientInputType = new GraphQLInputObjectType({
     }
 });
 
-let importRecipeMutation = mutationWithClientMutationId({
-    name: 'ImportRecipe',
-    inputFields: {
-        url: {
-            type: new GraphQLNonNull(GraphQLString)
-        },
-        state: {
-            type: GraphQLString,
-            description: 'State of the recipe. Can be either "draft", "imported" or "uploaded"',
-            defaultValue: 'draft'
-        }
-    },
-    outputFields: {
-        recipe: {
-            type: recipeType,
-            resolve: (recipe) => recipe
-        }
-    },
-    mutateAndGetPayload: ({url, state}) => {
-        let promise = new Promise((resolve, reject) => {
-            getRecipe(url)
-                .then(
-                    (res) => {
-                        res.state = state;
-
-                        let recipe = new RecipeModel(res);
-
-                        recipe.save((error) => {
-                    		if(error) {
-                    			error.status = 400;
-                                console.log(error);
-                    			reject(error);
-                    		}
-                    		else {
-                                console.log(recipe);
-                    			resolve(recipe);
-                    		}
-                    	});
-                    })
-                .catch(reject);
-        });
-
-        return promise;
-    },
-});
 
 /**
  * Finally, we construct our schema (whose starting query type is the query
