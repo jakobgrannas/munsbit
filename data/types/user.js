@@ -1,4 +1,19 @@
-let userType = new GraphQLObjectType({
+import {
+	GraphQLString,
+	GraphQLObjectType,
+} from 'graphql';
+
+import {
+	connectionArgs,
+	connectionFromArray,
+	globalIdField,
+} from 'graphql-relay';
+
+import {nodeInterface} from '../nodeDefinitions'
+import {recipeConnection} from '../connections/recipeConnections';
+import {recipeType} from './recipe';
+
+export let userType = new GraphQLObjectType({
 	name: 'User',
 	description: 'A user of the app',
 	isTypeOf: (obj) => !!obj.userId,
@@ -14,11 +29,12 @@ let userType = new GraphQLObjectType({
 			type: GraphQLString,
 		},
 		recipes: {
-			type: new GraphQLList(recipeType),
+			type: recipeConnection,
+            args: connectionArgs,
 			description: "List of the user's recipes",
 			resolve: (recipes, args) => {
                 let promise = new Promise((resolve, reject) => {
-                    RecipeModel.find({}, (error, recipes) => {
+                    RecipeModel.find({}, (error, recipes) => { // TODO: use connectionFromArray
                 		if(error) {
                 			error.status = 400;
                 			return reject(error);

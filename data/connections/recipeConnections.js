@@ -2,8 +2,8 @@ import {
 	connectionDefinitions
 } from 'graphql-relay';
 
-import { ingredientType } from './types/ingredient';
-import { recipeType } from './types/recipe';
+import { ingredientType } from '../types/ingredient';
+import { recipeType } from '../types/recipe';
 
 const {
   connectionType: ingredientConnection,

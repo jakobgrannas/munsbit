@@ -7,7 +7,7 @@ import {
 	globalIdField
 } from 'graphql-relay'
 
-import {nodeInterface} from '../../nodeDefinitions';
+import {nodeInterface} from '../nodeDefinitions';
 
 /**
  * Define your own types here

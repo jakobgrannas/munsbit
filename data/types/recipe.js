@@ -11,8 +11,8 @@ import {
 	globalIdField,
 } from 'graphql-relay';
 
-import {nodeInterface} from '../../nodeDefinitions'
-import {ingredientConnection} from '../connections'
+import {nodeInterface} from '../nodeDefinitions';
+import {ingredientConnection} from '../connections/recipeConnections';
 
 export let recipeType = new GraphQLObjectType({
     name: 'Recipe',

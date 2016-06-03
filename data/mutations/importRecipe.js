@@ -4,12 +4,12 @@ import {
 	cursorForObjectInConnection
 } from 'graphql-relay';
 
-import {recipeEdge} from '../connections';
+import {recipeEdge} from '../connections/recipeConnections';
 
-import {RecipeModel} from '../../../api/db/models/recipeModel';
+import {RecipeModel} from '../../api/db/models/recipeModel';
 import {
 	getRecipe,
-} from '../../../api/services/RecipeService';
+} from '../../api/services/RecipeService';
 
 
 export const importRecipe = mutationWithClientMutationId({

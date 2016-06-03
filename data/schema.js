@@ -27,16 +27,14 @@ import {
   getIngredients
 } from '../api/services/RecipeService';
 
-import {
-    recipeMutations,
-    recipeType,
-} from './recipes';
-
+import {importRecipe} from './mutations/importRecipe'; // TODO: Import all mutations from mutations/index.js
+import {recipeType} from './types/recipe';
+import {recipeConnection} from './connections/recipeConnections';
 import {RecipeModel} from '../api/db/models/recipeModel';
 
-import {nodeInterface, nodeField} from './nodeDefinitions';
+import {userType} from './types/user';
 
-import {recipeConnection} from './recipes/connections';
+import {nodeInterface, nodeField} from './nodeDefinitions';
 
 let getViewer = () => ({
 	type: 'registered' // TODO: or 'anonymous'
@@ -47,50 +45,6 @@ let getUser = () => ({
 	name: 'Anonymous',
 	email: 'due'
 });
-
-// TODO: Move out
-let userType = new GraphQLObjectType({
-	name: 'User',
-	description: 'A user of the app',
-	isTypeOf: (obj) => !!obj.userId,
-	fields: () => ({
-		id: globalIdField('User'),
-		userId: {
-			type: GraphQLString
-		},
-        name: {
-            type: GraphQLString
-        },
-		email: {
-			type: GraphQLString,
-		},
-		recipes: {
-			type: recipeConnection,
-            args: connectionArgs,
-			description: "List of the user's recipes",
-			resolve: (recipes, args) => {
-                let promise = new Promise((resolve, reject) => {
-                    RecipeModel.find({}, (error, recipes) => { // TODO: use connectionFromArray
-                		if(error) {
-                			error.status = 400;
-                			return reject(error);
-                		}
-                		else {
-                			resolve(recipes);
-                		}
-                	}).sort({order: 'asc'});
-                })
-
-				return promise;
-			}
-		},
-		recipe: {
-			type: recipeType
-		}
-	}),
-	interfaces: [nodeInterface]
-});
-
 
 
 let viewerType = new GraphQLObjectType({
@@ -185,7 +139,7 @@ var queryType = new GraphQLObjectType({
 var mutationType = new GraphQLObjectType({
     name: 'Mutation',
     fields: () => ({
-        importRecipe: recipeMutations.importRecipe
+        importRecipe
     })
 });
 
