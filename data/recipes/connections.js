@@ -19,5 +19,5 @@ export {
 	ingredientConnection,
 	ingredientEdge,
 	recipeConnection,
-	recipeType
+	recipeEdge
 };

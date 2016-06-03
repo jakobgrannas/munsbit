@@ -36,6 +36,8 @@ import {RecipeModel} from '../api/db/models/recipeModel';
 
 import {nodeInterface, nodeField} from './nodeDefinitions';
 
+import {recipeConnection} from './recipes/connections';
+
 let getViewer = () => ({
 	type: 'registered' // TODO: or 'anonymous'
 });
@@ -63,11 +65,12 @@ let userType = new GraphQLObjectType({
 			type: GraphQLString,
 		},
 		recipes: {
-			type: new GraphQLList(recipeType),
+			type: recipeConnection,
+            args: connectionArgs,
 			description: "List of the user's recipes",
 			resolve: (recipes, args) => {
                 let promise = new Promise((resolve, reject) => {
-                    RecipeModel.find({}, (error, recipes) => {
+                    RecipeModel.find({}, (error, recipes) => { // TODO: use connectionFromArray
                 		if(error) {
                 			error.status = 400;
                 			return reject(error);

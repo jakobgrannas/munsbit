@@ -7,20 +7,16 @@ export default class ImportRecipeMutation extends Relay.Mutation {
 		url: ''
 	};
 
-	static fragments = {
-		User: () => Relay.QL`
-			fragment on User {
-				recipe
+	/*static fragments = {
+		// Fields used in the optimistic response
+		recipe: () => Relay.QL`
+			fragment on Recipe {
+				title,
+				state,
+				instructions
 			}
 		`,
-        /*viewer: () => Relay.QL`
-            fragment on Viewer {
-				recipe(url: $url) {
-					${Recipe.getFragment('recipe')}
-				}
-            }
-        `*/
-	};
+	};*/
 
 	getMutation() {
 	    return Relay.QL`mutation{importRecipe}`;
@@ -30,11 +26,13 @@ export default class ImportRecipeMutation extends Relay.Mutation {
 	getFatQuery() {
 		return Relay.QL`
 			fragment on ImportRecipePayload {
-				recipe {
-					title,
-			    	state,
-			    	instructions
-			    }
+				newRecipeEdge {
+					node {
+						title,
+						state,
+						instructions
+					}
+				}
 			}
 		`;
 	}
@@ -44,9 +42,9 @@ export default class ImportRecipeMutation extends Relay.Mutation {
 		return [{
 			type: 'RANGE_ADD',
 			parentName: 'user',
-			parentID: '', // TODO: WHat should this be?
+			parentID: this.props.user.id,
 			connectionName: 'recipes',
-			edgeName: 'newRecipeEdge', // Not sure what this should be either...
+			edgeName: 'newRecipeEdge',
 			rangeBehaviors: {
 				'': 'added',
 			}
@@ -55,7 +53,8 @@ export default class ImportRecipeMutation extends Relay.Mutation {
 
 	getVariables() {
 		return {
-			url: this.props.url
+			url: this.props.url,
+			//userId: this.props.user.id
 		}
 	}
 

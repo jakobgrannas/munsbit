@@ -3,13 +3,15 @@ import Relay from 'react-relay';
 
 class Recipe extends React.Component {
     render () {
-        let {title} = this.props.recipe || '';
+        let {title, state, instructions} = this.props.recipe || '';
 
         console.log('Recipe obj', this.props.recipe);
 
         return (
             <div>
                 <p>{title}</p>
+				<span>{state}</span>
+				<span>{instructions}</span>
             </div>
         );
     }

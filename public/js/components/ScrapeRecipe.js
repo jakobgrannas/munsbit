@@ -6,18 +6,17 @@ import ImportRecipeMutation from '../mutations/importRecipe';
 
 class ScrapeRecipe extends React.Component {
     _handleUrlChange = (url) => {
-		Relay.Store.update(
+		Relay.Store.commitUpdate(
 			new ImportRecipeMutation({
 				url: url,
+				user: this.props.viewer.user
 			})
 		);
-        /*this.props.relay.setVariables({
-            url: url
-        });*/
     };
 
     render () {
-        let {recipe: recipe = null} = this.props.viewer;
+        const {user} = this.props.viewer;
+		const recipe = null;
 
         return (
 			<div>
@@ -29,16 +28,17 @@ class ScrapeRecipe extends React.Component {
 }
 
 export default Relay.createContainer(ScrapeRecipe, {
-    initialVariables: {
+    /*initialVariables: {
         url: ''
-    },
+    },*/
     fragments: {
         viewer: () => Relay.QL`
             fragment on Viewer {
-				recipe(url: $url) {
-					${Recipe.getFragment('recipe')}
+				user {
+					id,
+					userId
 				}
             }
-        `
+        ` //${ImportRecipeMutation.getFragment('recipe')}
     }
 });

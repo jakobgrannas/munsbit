@@ -5,7 +5,7 @@ input ImportRecipeInput {
 }
 
 type ImportRecipePayload {
-  recipe: Recipe
+  newRecipeEdge: RecipeEdge
   clientMutationId: String!
 }
 
@@ -53,7 +53,17 @@ type Recipe implements Node {
   datePublished: String
   imageUrl: String
   instructions: [String]
-  ingredients: IngredientConnection
+  ingredients(after: String, first: Int, before: String, last: Int): IngredientConnection
+}
+
+type RecipeConnection {
+  pageInfo: PageInfo!
+  edges: [RecipeEdge]
+}
+
+type RecipeEdge {
+  node: Recipe
+  cursor: String!
 }
 
 type RootQueryType {
@@ -66,7 +76,7 @@ type User implements Node {
   userId: String
   name: String
   email: String
-  recipes: [Recipe]
+  recipes(after: String, first: Int, before: String, last: Int): RecipeConnection
   recipe: Recipe
 }
 
